@@ -1,0 +1,53 @@
+// Pipeline equivalente en Jenkins (alternativa a GitHub Actions)
+// Las etapas siguen la anatomia de CI/CD para datos vista en clase
+pipeline {
+    agent { docker { image 'python:3.13-slim' } }
+
+    environment {
+        APP_ENV = 'qa'
+    }
+
+    stages {
+        stage('Build Environment') {
+            steps { sh 'pip install -r requirements-dev.txt' }
+        }
+        stage('Static Analysis') {
+            steps {
+                sh 'black --check src scripts tests'
+                sh 'bandit -r src scripts -ll'
+            }
+        }
+        stage('Unit & Integration Tests') {
+            steps { sh 'pytest --ignore=tests/test_data_quality.py' }
+        }
+        stage('Data & Schema Tests') {
+            // Quality gate: si falla, el pipeline se detiene aqui
+            steps { sh 'pytest tests/test_data_quality.py' }
+        }
+        stage('Train & Validate') {
+            steps {
+                sh 'python -m scripts.create_db data/ventas.db'
+                sh 'python -m src.train_ventas'
+            }
+        }
+        stage('Package') {
+            steps { sh "docker build -t retailmax/ventas:${env.BUILD_NUMBER} ." }
+        }
+        stage('Deploy Staging') {
+            steps {
+                sh 'flyway -configFiles=sql/flyway.conf migrate'
+                echo 'Desplegando imagen en QA (espejo de PROD)...'
+            }
+        }
+        stage('Approval Gate') {
+            steps { input message: 'Aprobar el paso a produccion?' }
+        }
+        stage('Deploy Production (Canary)') {
+            steps { echo 'Canary 10% -> 50% -> 100% con monitoreo de metricas' }
+        }
+    }
+
+    post {
+        failure { echo 'Pipeline detenido: notificar al autor y al data owner' }
+    }
+}
