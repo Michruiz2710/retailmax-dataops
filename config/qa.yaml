@@ -1,0 +1,24 @@
+# Entorno QA / Staging: espejo de produccion
+environment: qa
+
+database:
+  path: data/ventas_qa.db       # snapshot semanal de PROD de los 5 paises
+  pii: anonimizados             # nombres, documentos y emails enmascarados
+
+storage:
+  bucket: retailmax-qa-data     # bucket S3 de datos de staging (infra/main.tf)
+
+quality:
+  max_null_pct: 0.10
+  min_precio_unitario: 0.01
+
+model:
+  max_mape: 0.15
+
+load_test:
+  max_latency_ms_p95: 500       # SLA con clientes corporativos
+  max_error_rate: 0.01
+
+outputs:
+  aggregated_sales: data/aggregated_sales.csv
+  model_path: models/model.pkl

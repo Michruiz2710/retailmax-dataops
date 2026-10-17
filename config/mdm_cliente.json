@@ -1,0 +1,35 @@
+{
+  "entidad": "Cliente",
+  "version_definicion": "1.0",
+  "vigente_desde": "2026-11-01",
+  "data_owner": "Direccion Comercial",
+  "data_steward": "Equipo de Datos Maestros",
+  "definicion_cliente_activo": {
+    "descripcion": "Cliente con al menos una compra pagada (tienda o e-commerce) en los ultimos 90 dias, en cualquiera de los 5 paises",
+    "ventana_dias": 90,
+    "requiere_pago": true
+  },
+  "clave_matching": [
+    ["tipo_documento", "numero_documento", "pais"],
+    ["email_normalizado", "nombre_normalizado"]
+  ],
+  "reglas_supervivencia": {
+    "nombre": "mas_completo",
+    "email": "fuente_mas_confiable",
+    "telefono": "mas_reciente_valido_E164",
+    "direccion": "mas_reciente_estandarizada",
+    "fecha_registro": "mas_antigua"
+  },
+  "jerarquia_fuentes": ["CRM", "ERP", "ECOMMERCE", "POS"],
+  "reglas_calidad": {
+    "email": "formato_valido",
+    "telefono": "formato_E164",
+    "numero_documento": "unico_por_pais",
+    "pais": ["CO", "PE", "MX", "CL", "EC"]
+  },
+  "acceso": {
+    "lectura": ["analistas", "cientificos_datos"],
+    "edicion": ["data_steward"],
+    "pii_enmascarada_en": ["dev", "qa"]
+  }
+}

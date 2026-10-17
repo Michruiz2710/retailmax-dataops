@@ -1,0 +1,30 @@
+# Entorno PROD: solo lo despliega el pipeline de CD y nadie lo ejecuta a mano
+environment: prod
+
+database:
+  # La conexion real NO va en el repositorio: se inyecta desde
+  # AWS Secrets Manager en la variable DATABASE_URL.
+  path: ${DATABASE_URL}
+  pii: reales
+
+storage:
+  bucket: retailmax-prod-data
+
+quality:
+  max_null_pct: 0.10
+  min_precio_unitario: 0.01
+
+model:
+  max_mape: 0.15
+
+deployment:
+  strategy: canary
+  canary_steps: [10, 50, 100]   # % de tiendas que reciben el modelo nuevo
+  canary_wait_hours: 24
+
+monitoring:
+  drift_alert_threshold: 0.2    # alerta si cambia la distribucion de entrada
+
+outputs:
+  aggregated_sales: s3://retailmax-prod-data/aggregated_sales.csv
+  model_path: s3://retailmax-prod-data/models/model.pkl

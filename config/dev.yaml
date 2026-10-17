@@ -1,0 +1,20 @@
+# Entorno DEV: zona de experimentacion
+environment: dev
+
+database:
+  path: data/ventas.db          # SQLite local con datos SINTETICOS
+  pii: sinteticos               # nunca datos de produccion en crudo
+
+storage:
+  bucket: retailmax-dev-data
+
+quality:
+  max_null_pct: 0.10            # quality gate: maximo 10 % de nulos por columna
+  min_precio_unitario: 0.01
+
+model:
+  max_mape: 0.15                # el modelo no pasa si el error supera 15 %
+
+outputs:
+  aggregated_sales: data/aggregated_sales.csv
+  model_path: models/model.pkl
