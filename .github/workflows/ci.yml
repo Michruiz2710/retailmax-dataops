@@ -1,0 +1,46 @@
+# CI: se ejecuta en cada Pull Request hacia main (y en cada push a main)
+# Si algun job falla el PR queda marcado en rojo y no se debe hacer merge
+name: CI - pruebas en cada Pull Request
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  static-analysis:
+    name: Analisis estatico
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r requirements-dev.txt
+      - name: Formato (black)
+        run: black --check src scripts tests notebooks
+      - name: Seguridad (bandit)
+        run: bandit -r src scripts -ll
+
+  unit-tests:
+    name: Pruebas unitarias e integracion
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r requirements-dev.txt
+      - run: pytest --ignore=tests/test_data_quality.py
+
+  data-quality:
+    name: Pruebas de esquema y calidad de datos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r requirements-dev.txt
+      - run: pytest tests/test_data_quality.py
