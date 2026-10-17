@@ -1,0 +1,4 @@
+[core]
+    remote = s3remoto
+['remote "s3remoto"']
+    url = s3://retailmax-dvc-store/ventas

@@ -1,0 +1,19 @@
+# Etapas del pipeline de datos versionadas con DVC
+# `dvc repro` vuelve a ejecutar solo las etapas cuyas entradas cambiaron
+stages:
+  crear_base:
+    cmd: python -m scripts.create_db data/ventas.db
+    deps:
+      - scripts/create_db.py
+    outs:
+      - data/ventas.db
+
+  entrenar:
+    cmd: python -m src.train_ventas
+    deps:
+      - data/ventas.db
+      - src/
+      - config/dev.yaml
+    outs:
+      - data/aggregated_sales.csv
+      - models/model.pkl
